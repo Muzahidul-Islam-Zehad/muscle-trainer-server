@@ -48,7 +48,7 @@ app.post('/add-user', async (req, res) => {
     }
   
     const userData = {
-      name: displayName,
+      userName: displayName,
       email,
       created_at: new Date().toISOString()
     };
