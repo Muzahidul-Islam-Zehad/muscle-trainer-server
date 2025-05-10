@@ -27,7 +27,7 @@ app.get('/users2', async (req, res) => {
 
 //add-user based on location
 app.post('/add-user', async (req, res) => {
-    const { userName, email, timezone } = req.body;
+    const { userName, email, createdAt } = req.body;
 
     // Check if user exists in Supabase1
     const { data: bdUser } = await supabase1
@@ -55,9 +55,10 @@ app.post('/add-user', async (req, res) => {
 
     let insertResult;
 
-    console.log("Timezone:", timezone);
+    console.log("Timezone:",createdAt);
 
-    if (timezone?.trim().toLowerCase() === 'asia/dhaka') {
+
+    if (createdAt?.trim().toLowerCase() === 'asia/dhaka') {
         insertResult = await supabase1.from('users').insert(userData);
     } else {
         insertResult = await supabase2.from('users').insert(userData);
