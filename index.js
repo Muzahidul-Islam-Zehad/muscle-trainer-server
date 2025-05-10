@@ -52,14 +52,16 @@ app.post('/add-user', async (req, res) => {
       email,
       created_at: new Date().toISOString()
     };
+
+    let result;
   
     if (timezone === 'Asia/Dhaka') {
-      await supabase1.from('users').insert(userData);
+      result = await supabase1.from('users').insert(userData);
     } else {
-      await supabase2.from('users').insert(userData);
+      result = await supabase2.from('users').insert(userData);
     }
   
-    res.status(201).json({ message: 'User inserted based on timezone' });
+    res.send(result);
   });
   
 
