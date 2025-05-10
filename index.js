@@ -25,6 +25,45 @@ app.get('/users2', async (req, res) => {
   res.send(data);
 });
 
+//add-user based on location
+app.post('/add-user', async (req, res) => {
+    const { displayName, email, timezone } = req.body;
+  
+    // Check if user exists in Supabase1
+    const { data: bdUser } = await supabase1
+      .from('users')
+      .select()
+      .eq('email', email)
+      .single();
+  
+    // Check if user exists in Supabase2
+    const { data: foreignUser } = await supabase2
+      .from('users')
+      .select()
+      .eq('email', email)
+      .single();
+  
+    if (bdUser || foreignUser) {
+      return res.status(200).json({ message: 'User already exists' });
+    }
+  
+    const userData = {
+      name: displayName,
+      email,
+      created_at: new Date().toISOString()
+    };
+  
+    if (timezone === 'Asia/Dhaka') {
+      await supabase1.from('users').insert(userData);
+    } else {
+      await supabase2.from('users').insert(userData);
+    }
+  
+    res.status(201).json({ message: 'User inserted based on timezone' });
+  });
+  
+
+
 app.get('/', async (req, res) => {
   res.send('Hello from the server!');
 });
