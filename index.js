@@ -13,64 +13,68 @@ const supabase2 = createClient(process.env.SUPABASE2_URL, process.env.SUPABASE2_
 
 // Example GET API supabase1
 app.get('/users1', async (req, res) => {
-  const { data, error } = await supabase1.from('users').select('*');
-  if (error) return res.status(500).json({ error });
-  res.send(data);
+    const { data, error } = await supabase1.from('users').select('*');
+    if (error) return res.status(500).json({ error });
+    res.send(data);
 });
 
 // Example GET API supabase2
 app.get('/users2', async (req, res) => {
-  const { data, error } = await supabase2.from('users').select('*');
-  if (error) return res.status(500).json({ error });
-  res.send(data);
+    const { data, error } = await supabase2.from('users').select('*');
+    if (error) return res.status(500).json({ error });
+    res.send(data);
 });
 
 //add-user based on location
 app.post('/add-user', async (req, res) => {
     const { displayName, email, timezone } = req.body;
-  
+
     // Check if user exists in Supabase1
     const { data: bdUser } = await supabase1
-      .from('users')
-      .select()
-      .eq('email', email)
-      .single();
-  
+        .from('users')
+        .select()
+        .eq('email', email)
+        .single();
+
     // Check if user exists in Supabase2
     const { data: foreignUser } = await supabase2
-      .from('users')
-      .select()
-      .eq('email', email)
-      .single();
-  
+        .from('users')
+        .select()
+        .eq('email', email)
+        .single();
+
     if (bdUser || foreignUser) {
-      return res.status(200).json({ message: 'User already exists' });
+        return res.status(200).json({ message: 'User already exists' });
     }
-  
+
     const userData = {
-      userName: displayName,
-      email,
-      created_at: new Date().toISOString()
+        userName: displayName,
+        email,
+        created_at: new Date().toISOString()
     };
 
-    let result;
-  
-    if (timezone === 'Asia/Dhaka') {
-      result = await supabase1.from('users').insert(userData);
+    let insertResult;
+
+    if (timezone?.trim().toLowerCase() === 'asia/dhaka') {
+        insertResult = await supabase1.from('users').insert(userData);
     } else {
-      result = await supabase2.from('users').insert(userData);
+        insertResult = await supabase2.from('users').insert(userData);
     }
-  
-    res.send(result);
-  });
-  
+
+    if (insertResult.error) {
+        console.error("Insert error:", insertResult.error);
+        return res.status(500).json({ error: insertResult.error.message });
+    }
+
+});
+
 
 
 app.get('/', async (req, res) => {
-  res.send('Hello from the server!');
+    res.send('Hello from the server!');
 });
-  
+
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
