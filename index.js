@@ -60,12 +60,12 @@ app.post('/add-user', async (req, res) => {
     } else {
         insertResult = await supabase2.from('users').insert(userData);
     }
-
     if (insertResult.error) {
         console.error("Insert error:", insertResult.error);
         return res.status(500).json({ error: insertResult.error.message });
     }
 
+    res.status(201).json({ message: 'User added successfully', data: insertResult.data });
 });
 
 
