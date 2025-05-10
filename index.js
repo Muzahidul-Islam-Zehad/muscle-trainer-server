@@ -55,6 +55,8 @@ app.post('/add-user', async (req, res) => {
 
     let insertResult;
 
+    console.log("Timezone:", timezone);
+
     if (timezone?.trim().toLowerCase() === 'asia/dhaka') {
         insertResult = await supabase1.from('users').insert(userData);
     } else {
