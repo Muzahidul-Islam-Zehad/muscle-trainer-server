@@ -66,6 +66,8 @@ app.post('/add-user', async (req, res) => {
     }
 
     res.status(201).json({ message: 'User added successfully', data: insertResult.data });
+    console.log(insertResult.data);
+    console.log("User added successfully to the database:", insertResult.data);
 });
 
 
