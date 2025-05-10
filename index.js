@@ -1,0 +1,35 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { createClient } = require('@supabase/supabase-js');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+const PORT = process.env.PORT || 3000;
+
+const supabase1 = createClient(process.env.SUPABASE1_URL, process.env.SUPABASE1_KEY);
+const supabase2 = createClient(process.env.SUPABASE2_URL, process.env.SUPABASE2_KEY);
+
+// Example GET API supabase1
+app.get('/users1', async (req, res) => {
+  const { data, error } = await supabase1.from('users').select('*');
+  if (error) return res.status(500).json({ error });
+  res.send(data);
+});
+
+// Example GET API supabase2
+app.get('/users2', async (req, res) => {
+  const { data, error } = await supabase2.from('users').select('*');
+  if (error) return res.status(500).json({ error });
+  res.send(data);
+});
+
+app.get('/', async (req, res) => {
+  res.send('Hello from the server!');
+});
+  
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
