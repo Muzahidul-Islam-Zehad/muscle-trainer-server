@@ -57,9 +57,9 @@ app.post('/add-user', async (req, res) => {
     let insertResult;
     
     if (location?.trim().toLowerCase() === 'asia/dhaka') {
-        insertResult = await supabase1.from('users').insert(userData);
+        insertResult = await supabase1.from('users').insert(userData).select();
     } else {
-        insertResult = await supabase2.from('users').insert(userData);
+        insertResult = await supabase2.from('users').insert(userData).select();
     }
     if (insertResult.error) {
         console.error("Insert error:", insertResult.error);
