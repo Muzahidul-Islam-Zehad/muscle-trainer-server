@@ -66,7 +66,7 @@ app.post('/add-user', async (req, res) => {
         return res.status(500).json({ error: insertResult.error.message });
     }
 
-    res.status(201).json({ message: 'User added successfully', data: insertResult.data });
+    res.status(201).json({ message: 'User added successfully', id: insertResult?.data[0]?.id });
     console.log(insertResult.data);
     console.log("User added successfully to the database:", insertResult.data);
 });
