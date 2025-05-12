@@ -28,6 +28,7 @@ app.get('/users2', async (req, res) => {
 //add-user based on location
 app.post('/add-user', async (req, res) => {
     const { userName, email, location } = req.body;
+    console.log("Location ->",location);
 
     // Check if user exists in Supabase1
     const { data: bdUser } = await supabase1
