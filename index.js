@@ -32,6 +32,7 @@ app.get('/users2', async (req, res) => {
 
 app.post('/add-personal-info', async (req, res) => {
     const { email, gender, birthDate, weight, height, bmi } = req.body;
+    console.log(birthDate);
 
     try {
         // Check if email exists in either database
