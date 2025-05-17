@@ -1,7 +1,10 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
+const dayjs = require('dayjs');
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
 
 const app = express();
 app.use(cors());
@@ -26,52 +29,48 @@ app.get('/users2', async (req, res) => {
 });
 
 //add-user based on location
-app.post('/add-user', async (req, res) => {
-    const { userName, email, location } = req.body;
-    console.log("Location ->",location);
+const dayjs = require('dayjs');
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
 
-    // Check if user exists in Supabase1
-    const { data: bdUser } = await supabase1
-        .from('users')
-        .select()
-        .eq('email', email)
-        .single();
+app.post('/add-personal-info', async (req, res) => {
+    const { email, gender, birthDate, weight, height, bmi } = req.body;
 
-    // Check if user exists in Supabase2
-    const { data: foreignUser } = await supabase2
-        .from('users')
-        .select()
-        .eq('email', email)
-        .single();
+    try {
+        // Check if email exists in either database
+        const existsInDB1 = await supabase1.from('personal_info').select('email').eq('email', email).single();
+        const existsInDB2 = await supabase2.from('personal_info').select('email').eq('email', email).single();
 
-    if (bdUser || foreignUser) {
-        return res.status(200).json({ message: 'User already exists' });
+        if (existsInDB1.data || existsInDB2.data) {
+            console.log('Personal info already exists');
+            return res.status(200).json({ message: 'Personal info already exists' });
+        }
+
+        // Parse birthDate and calculate age
+        const dob = dayjs(birthDate, 'DD-MM-YYYY');
+        if (!dob.isValid()) {
+            console.log('Invalid birthDate format');
+            return res.status(400).json({ message: 'Invalid birthDate format. Use dd-MM-yyyy' });
+        }
+
+        const age = dayjs().diff(dob, 'year');
+        const personalInfo = { email, gender, birthDate, weight, height, bmi };
+
+        // Insert based on age
+        const db = age <= 40 ? supabase1 : supabase2;
+        const { error } = await db.from('personal_info').insert(personalInfo);
+
+        if (error) {
+            console.error('Insert error:', error);
+            return res.status(500).json({ message: 'Insert failed', error: error.message });
+        }
+        console.log('Personal info added to the database');
+        return res.status(201).json({ message: `Personal info added. Age: ${age}` });
+
+    } catch (err) {
+        return res.status(500).json({ message: 'Server error', error: err.message });
     }
-
-    const userData = {
-        userName,
-        email,
-        created_at: new Date().toISOString(),
-        location
-    };
-
-    let insertResult;
-    
-    if (location?.trim().toLowerCase() === 'asia/dhaka') {
-        insertResult = await supabase1.from('users').insert(userData).select();
-    } else {
-        insertResult = await supabase2.from('users').insert(userData).select();
-    }
-    if (insertResult.error) {
-        console.error("Insert error:", insertResult.error);
-        return res.status(500).json({ error: insertResult.error.message });
-    }
-
-    res.status(201).send(insertResult?.data[0]?.id);
-
-    console.log("User added successfully to the database:", insertResult?.data[0]?.id);
 });
-
 
 
 app.get('/', async (req, res) => {
