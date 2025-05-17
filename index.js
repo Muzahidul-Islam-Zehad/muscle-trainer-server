@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
-const dayjs = require('dayjs');
+const dayjs = require("dayjs");
 const customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
@@ -29,9 +29,6 @@ app.get('/users2', async (req, res) => {
 });
 
 //add-user based on location
-const dayjs = require('dayjs');
-const customParseFormat = require('dayjs/plugin/customParseFormat');
-dayjs.extend(customParseFormat);
 
 app.post('/add-personal-info', async (req, res) => {
     const { email, gender, birthDate, weight, height, bmi } = req.body;
