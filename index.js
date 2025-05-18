@@ -84,6 +84,45 @@ app.post('/add-personal-info', async (req, res) => {
 
 
 
+// get personal info based on email
+app.get('/personal-info', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const [data1, data2] = await Promise.all([
+            supabase1.from('personal_info').select('*').eq('email', email).maybeSingle(),
+            supabase2.from('personal_info').select('*').eq('email', email).maybeSingle()
+        ]);
+
+        const data = data1.data || data2.data;
+
+        if (data) {
+            console.log('Fetched personal info:', data);
+
+            // 🔁 Rename keys before sending
+            const transformedData = {
+                ...data,
+                weight: data.weight_kg,
+                height: data.height_cm,
+                birthDate: data.birth_date,
+                timezoneId: null
+            };
+
+            // 🧹 Remove old keys
+            delete transformedData.weight_kg;
+            delete transformedData.height_cm;
+            delete transformedData.birth_date;
+
+            return res.status(200).json(transformedData);
+        } else {
+            return res.status(404).json({ message: 'Personal info not found' });
+        }
+    } catch (err) {
+        return res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+
 app.get('/', async (req, res) => {
     res.send('Hello from the server!');
 });
