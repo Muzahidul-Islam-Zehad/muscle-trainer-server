@@ -52,7 +52,7 @@ app.post('/add-personal-info', async (req, res) => {
         }
 
         const age = dayjs().diff(dob, 'year');
-        const personalInfo = { email, gender, birthDate, weight, height, bmi };
+        const personalInfo = { email, gender, birth_date : birthDate, weight_kg : weight, height_cm : height, bmi };
 
         // Insert based on age
         const db = age <= 40 ? supabase1 : supabase2;
