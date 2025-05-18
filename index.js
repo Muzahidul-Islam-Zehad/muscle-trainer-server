@@ -45,7 +45,7 @@ app.post('/add-personal-info', async (req, res) => {
         }
 
         // Parse birthDate and calculate age
-        const dob = dayjs(birthDate, 'DD-MM-YYYY');
+        const dob = dayjs(birthDate, 'D-M-YYYY');
         if (!dob.isValid()) {
             console.log('Invalid birthDate format');
             return res.status(400).json({ message: 'Invalid birthDate format. Use dd-MM-yyyy' });
