@@ -30,45 +30,58 @@ app.get('/users2', async (req, res) => {
 
 //add-user based on location
 
+const dayjs = require('dayjs');
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
+
 app.post('/add-personal-info', async (req, res) => {
-    const { email, gender, birthDate, weight, height, bmi } = req.body;
-    console.log(birthDate);
+    const { email, gender, birthDate, weight, height, bmi, timezoneId } = req.body;
 
     try {
-        // Check if email exists in either database
-        const existsInDB1 = await supabase1.from('personal_info').select('email').eq('email', email).single();
-        const existsInDB2 = await supabase2.from('personal_info').select('email').eq('email', email).single();
+        // Check if email already exists in either DB
+        const [check1, check2] = await Promise.all([
+            supabase1.from('personal_info').select('email').eq('email', email).maybeSingle(),
+            supabase2.from('personal_info').select('email').eq('email', email).maybeSingle()
+        ]);
 
-        if (existsInDB1.data || existsInDB2.data) {
+        if (check1.data || check2.data) {
             console.log('Personal info already exists');
             return res.status(200).json({ message: 'Personal info already exists' });
         }
 
-        // Parse birthDate and calculate age
-        const dob = dayjs(birthDate, 'D-M-YYYY');
-        if (!dob.isValid()) {
-            console.log('Invalid birthDate format');
-            return res.status(400).json({ message: 'Invalid birthDate format. Use dd-MM-yyyy' });
-        }
+        // Validate birth date
+        // const dob = dayjs(birthDate, 'D-M-YYYY');
+        // if (!dob.isValid()) {
+        //     return res.status(400).json({ message: 'Invalid birthDate format. Use D-M-YYYY' });
+        // }
 
-        const age = dayjs().diff(dob, 'year');
-        const personalInfo = { email, gender, birth_date : birthDate, weight_kg : weight, height_cm : height, bmi };
+        const personalInfo = {
+            email,
+            gender,
+            birth_date: birthDate,
+            weight_kg: weight,
+            height_cm: height,
+            bmi
+        };
 
-        // Insert based on age
-        const db = age <= 40 ? supabase1 : supabase2;
+        // Determine which DB to insert based on timezone
+        const db = (timezoneId?.trim().toLowerCase() === 'asia/dhaka') ? supabase1 : supabase2;
+
         const { error } = await db.from('personal_info').insert(personalInfo);
 
         if (error) {
             console.error('Insert error:', error);
             return res.status(500).json({ message: 'Insert failed', error: error.message });
         }
+
         console.log('Personal info added to the database');
-        return res.status(201).json({ message: `Personal info added. Age: ${age}` });
+        return res.status(201).json({ message: 'Personal info added successfully' });
 
     } catch (err) {
         return res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
+
 
 
 app.get('/', async (req, res) => {
