@@ -86,7 +86,7 @@ app.post('/add-personal-info', async (req, res) => {
 
 // get personal info based on email
 app.get('/personal-info', async (req, res) => {
-    const { email } = req.body;
+    const { email } = req.query;
 
     try {
         const [data1, data2] = await Promise.all([
