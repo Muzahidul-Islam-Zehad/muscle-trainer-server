@@ -36,6 +36,7 @@ dayjs.extend(customParseFormat);
 
 app.post('/add-personal-info', async (req, res) => {
     const { email, gender, birth_date, weight_kg, height_cm, bmi, timezoneId } = req.body;
+    console.log(req.body);
 
     try {
         // Check if email already exists in either DB
