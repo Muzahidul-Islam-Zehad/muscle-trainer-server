@@ -99,21 +99,7 @@ app.get('/personal-info', async (req, res) => {
         if (data) {
             console.log('Fetched personal info:', data);
 
-            // 🔁 Rename keys before sending
-            const transformedData = {
-                ...data,
-                weight: data.weight_kg,
-                height: data.height_cm,
-                birthDate: data.birth_date,
-                timezoneId: null
-            };
-
-            // 🧹 Remove old keys
-            delete transformedData.weight_kg;
-            delete transformedData.height_cm;
-            delete transformedData.birth_date;
-
-            return res.status(200).json(transformedData);
+            return res.status(200).json(data);
         } else {
             return res.status(404).json({ message: 'Personal info not found' });
         }
