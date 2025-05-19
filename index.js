@@ -162,6 +162,30 @@ app.get('/personal-info', async (req, res) => {
     }
 });
 
+// check if user info exists in any of the databases
+app.get('/check-userInfo', async (req, res) => {
+    const { email } = req.query;
+
+    try {
+        const [user1, user2] = await Promise.all([
+            supabase1.from('personal_info').select('email').eq('email', email).maybeSingle(),
+            supabase2.from('personal_info').select('email').eq('email', email).maybeSingle()
+        ]);
+
+        if (user1.data || user2.data) {
+            console.log("user info exists");
+            return res.status(200).json(true); // ✅ returning boolean
+        } else {
+            console.log("user info not found");
+            return res.status(200).json(false); // ✅ still returning 200, but with `false`
+        }
+    } catch (err) {
+        console.error("Server error:", err.message);
+        return res.status(500).json(false); // Optional: handle server error as false or handle separately in frontend
+    }
+});
+
+
 
 app.get('/', async (req, res) => {
     res.send('Hello from the server!');
