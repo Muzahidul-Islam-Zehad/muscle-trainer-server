@@ -188,12 +188,15 @@ app.get('/check-userInfo', async (req, res) => {
 // get workout plan based on type
 app.get('/workout_plan', async (req, res) => {
     const { w_type } = req.query;
+    console.log(w_type);
 
     try {
         const { data, error } = await supabase1
             .from('workout_plans')
             .select('*')
             .eq('w_type', w_type);
+
+        console.log("Fetched workout plan:", data);
 
         if (error) {
             console.error("Error fetching workout plan:", error);
