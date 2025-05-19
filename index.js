@@ -185,6 +185,32 @@ app.get('/check-userInfo', async (req, res) => {
     }
 });
 
+// get workout plan based on type
+app.get('/workout_plan', async (req, res) => {
+    const { w_type } = req.query;
+
+    try {
+        const { data, error } = await supabase1
+            .from('workout_plans')
+            .select('*')
+            .eq('w_type', w_type);
+
+        if (error) {
+            console.error("Error fetching workout plan:", error);
+            return res.status(500).json({ error });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(404).json({ message: 'Workout plan not found' });
+        }
+
+        res.status(200).json(data);
+    } catch (err) {
+        console.error("Server error:", err.message);
+        return res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
 
 
 app.get('/', async (req, res) => {
