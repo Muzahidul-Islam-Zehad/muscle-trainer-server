@@ -214,7 +214,34 @@ app.get('/workout_plan', async (req, res) => {
     }
 });
 
+//get meal plan
+app.get('/meals', async (req, res) => {
+    const { m_type } = req.query;
+    console.log(m_type);
 
+    try {
+        const { data, error } = await supabase1
+            .from('meals')
+            .select('*')
+            .eq('m_type', m_type);
+
+        console.log("Fetched meal plan:", data);
+
+        if (error) {
+            console.error("Error fetching meal plan:", error);
+            return res.status(500).json({ error });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(404).json({ message: 'Meal plan not found' });
+        }
+
+        res.status(200).json(data);
+    } catch (err) {
+        console.error("Server error:", err.message);
+        return res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
 
 app.get('/', async (req, res) => {
     res.send('Hello from the server!');
