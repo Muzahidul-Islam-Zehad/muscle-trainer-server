@@ -2,9 +2,6 @@ require("dotenv").config();
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
-// const dayjs = require("dayjs");
-// const customParseFormat = require('dayjs/plugin/customParseFormat');
-// dayjs.extend(customParseFormat);
 
 const app = express();
 app.use(cors());
@@ -81,27 +78,39 @@ app.post('/add-user', async (req, res) => {
 // dayjs.extend(customParseFormat);
 
 app.post('/add-personal-info', async (req, res) => {
-    const { email, gender, birth_date, weight_kg, height_cm, bmi, timezoneId } = req.body;
+    const { email, gender, birth_date, weight_kg, height_cm, bmi } = req.body;
     console.log(req.body);
 
     try {
-        // Check if email already exists in either DB
-        const [check1, check2] = await Promise.all([
-            supabase1.from('personal_info').select('email').eq('email', email).maybeSingle(),
-            supabase2.from('personal_info').select('email').eq('email', email).maybeSingle()
+        // STEP 1: Find which database the user email exists in (users table)
+        const [user1, user2] = await Promise.all([
+            supabase1.from('users').select('email').eq('email', email).maybeSingle(),
+            supabase2.from('users').select('email').eq('email', email).maybeSingle()
         ]);
 
-        if (check1.data || check2.data) {
+        let targetDB = null;
+
+        if (user1.data) {
+            targetDB = supabase1;
+        } else if (user2.data) {
+            targetDB = supabase2;
+        } else {
+            return res.status(404).json({ message: 'User not found in any database' });
+        }
+
+        // STEP 2: Check if personal info already exists in personal_info table
+        const { data: existingInfo } = await targetDB
+            .from('personal_info')
+            .select('email')
+            .eq('email', email)
+            .maybeSingle();
+
+        if (existingInfo) {
             console.log('Personal info already exists');
             return res.status(200).json({ message: 'Personal info already exists' });
         }
 
-        // Validate birth date
-        // const dob = dayjs(birthDate, 'D-M-YYYY');
-        // if (!dob.isValid()) {
-        //     return res.status(400).json({ message: 'Invalid birthDate format. Use D-M-YYYY' });
-        // }
-
+        // STEP 3: Insert personal info
         const personalInfo = {
             email,
             gender,
@@ -111,10 +120,7 @@ app.post('/add-personal-info', async (req, res) => {
             bmi
         };
 
-        // Determine which DB to insert based on timezone
-        const db = (timezoneId?.trim().toLowerCase() === 'asia/dhaka') ? supabase1 : supabase2;
-
-        const { error } = await db.from('personal_info').insert(personalInfo);
+        const { error } = await targetDB.from('personal_info').insert(personalInfo);
 
         if (error) {
             console.error('Insert error:', error);
@@ -128,6 +134,7 @@ app.post('/add-personal-info', async (req, res) => {
         return res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
+
 
 
 
